@@ -39,8 +39,11 @@ public class StatisticActor extends AbstractActor {
   private void displayStatistic(final List<StatisticItemEntity> statisticItems) {
     final long totalCounter = statisticItems.stream().mapToLong(item -> item.getItemsCount()).sum();
 
+    System.out.println("Statistic:");
+    System.out.println("-------------------------------------------");
     statisticItems.forEach(stat -> {
       System.out.println(String.format(STATISTIC_FORMAT, stat.getThreadName(), stat.getItemsCount(), totalCounter));
     });
+    System.out.println("-------------------------------------------");
   }
 }

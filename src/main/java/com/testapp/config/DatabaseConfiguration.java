@@ -15,6 +15,7 @@ import javax.annotation.PreDestroy;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
+import org.cassandraunit.spring.EmbeddedCassandra;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,7 @@ import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 @Configuration
+@EmbeddedCassandra
 @EnableCassandraRepositories("com.testapp.repository")
 public class DatabaseConfiguration extends AbstractCassandraConfiguration {
 
@@ -41,7 +43,7 @@ public class DatabaseConfiguration extends AbstractCassandraConfiguration {
 
   private static final String PROPERTIES_FILE = "cassandra.yaml";
 
-  private static final long STARTUP_TIMEOUT = 20000;
+  private static final long STARTUP_TIMEOUT = 40000;
 
 
   @Value("${spring.data.cassandra.keyspace-name}")
@@ -52,6 +54,11 @@ public class DatabaseConfiguration extends AbstractCassandraConfiguration {
 
   @Value("${spring.data.cassandra.port}")
   private Integer port;
+
+  public DatabaseConfiguration() {
+    System.setProperty("cassandra.jmx.local.port", "9242");
+    System.setProperty("com.datastax.driver.EXTENDED_PEER_CHECK", "false");
+  }
 
   @PostConstruct
   public void startDatabase() throws ConfigurationException, TTransportException, IOException {
@@ -92,6 +99,8 @@ public class DatabaseConfiguration extends AbstractCassandraConfiguration {
   protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
     return clusterBuilder -> {
       clusterBuilder.getConfiguration().getCodecRegistry().register(new DateTimeCodec());
+      clusterBuilder.withoutJMXReporting();
+      clusterBuilder.withoutMetrics();
       return clusterBuilder;
     };
   }
